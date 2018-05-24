@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
+        <property name="hibernate.connection.datasource">java:comp/env/jdbc/postgres</property>
+        <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQL82Dialect</property>
+        <property name="hibernate.id.new_generator_mappings">false</property>
+        <property name="hibernate.current_session_context_class">thread</property>
+        <property name="hibernate.show_sql">true</property>
+        <property name="connection.pool_size">5</property>
+
+        <mapping class="com.foxminded.university.domain.Department"/>
+        <mapping class="com.foxminded.university.domain.Faculty"/>
+        <mapping class="com.foxminded.university.domain.Subject"/>
+        <mapping class="com.foxminded.university.domain.Teacher"/>
+        <mapping class="com.foxminded.university.domain.Group"/>
+        <mapping class="com.foxminded.university.domain.Student"/>
+        <mapping class="com.foxminded.university.domain.Schedule"/>
+        <mapping class="com.foxminded.university.domain.LectureHall"/>
+
+    </session-factory>
+</hibernate-configuration>
