@@ -1,0 +1,71 @@
+stages:
+  - build
+  - test
+  - package
+  - deploy
+
+variables:
+  MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end"
+  MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+  VERSION: "1.0.${CI_PIPELINE_IID}"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .m2/repository/
+    - target/
+
+build:
+  stage: build
+  image: maven:latest
+  script:
+    - mvn $MAVEN_CLI_OPTS compile
+
+test:
+  stage: test
+  image: maven:latest
+  script:
+    - mvn $MAVEN_CLI_OPTS test
+
+package:
+  stage: package
+  image: maven:latest
+  script:
+    - mvn $MAVEN_CLI_OPTS package
+    - docker build -t mikhaild/tomcat .
+    - docker login -u mikhaild -p *********
+    - docker push mikhaild/tomcat
+  artifacts:
+    name: "${CI_PIPELINE_IID}"
+    expire_in: 30 days
+    paths:
+      - target/*.war
+deploy:
+  stage: deploy
+  script:
+    - docker-compose down
+    - docker-compose build 
+    - docker-compose up -d
+  
+
+#build_tomcat_image:
+#  stage: build_image
+#  image: docker:19.03
+#  script:
+#    - docker build -f Dockerfile.tomcat --build-arg IMAGE_VER=${VERSION} --tag "${IMAGE}:${VERSION}" .
+#    - docker login -u ${DOCKER_REG_UN} -p ${DOCKER_REG_PWD} ${DOCKER_REG_HOST}
+#    - docker push "${IMAGE}:${VERSION}"
+#    - docker run -p 18080:8080 -d --name tomcat_un "${IMAGE}:${VERSION}"
+#    - docker rmi "${IMAGE}:${VERSION}"
+#  dependencies:
+#    - package
+
+#build_mysql_image:
+#  stage: build_image
+#  image: docker:19.03
+#  script:
+#    - docker build -f Dockerfile.mysql --build-arg MYSQL_ROOT_PWD=${MYSQL_ROOT_PASSWD} --build-arg IMAGE_VER=${VERSION} --tag "university_mysql:latest" .
+#   - docker run -p 13306:3306 -d --name mysql -v /srv/mysql/data/:/var/lib/mysql university_mysql
+#  when: manual
+
+#docker build -f Dockerfile --build-arg MYSQL_ROOT_PSWD=root_pwd --tag university_mysql:latest .
